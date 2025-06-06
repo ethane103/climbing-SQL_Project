@@ -1,0 +1,356 @@
+\documentclass[10pt, english]{article}
+\usepackage[T1]{fontenc}
+\usepackage{babel}
+\usepackage{amsfonts} 
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{changepage}
+\usepackage{setspace}
+\usepackage[margin=0.875in]{geometry}
+\usepackage{multicol}
+\usepackage{xcolor}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{\baselineskip}
+\titlespacing*{\section}{0pt}{0.1\baselineskip}{0\baselineskip}
+\titlespacing*{\subsection}{0pt}{0.1\baselineskip}{0\baselineskip}
+
+\title{Notes on SQL\footnote{Working From https://www.sqltutorial.org/}}
+\author{}
+
+\begin{document}
+\maketitle
+
+\newpage
+\section{Getting Started}
+\subsection{What Is SQL}
+SQL is a language used to interact with databases. Databases are exactly what you expect, they store data, 
+and potentially structural information about that datas relations. 
+
+Two common types are
+\begin{enumerate}
+    \item Relational Database Management Systems (RDMBS - PostgreSQL, MySQL, MariaDB, ...)
+        \begin{enumerate}
+            \item Data is stored in Rows and Columns
+            \item Essentialy a large spreadsheet
+        \end{enumerate}
+    \item Document Databases (No SQL)
+        \begin{enumerate}
+            \item Data is stored as documents, no SQL
+        \end{enumerate}
+\end{enumerate}
+
+SQL stands for Structured Query Language, and is used to interface with rleational database systems, altering data,
+gathering data, removing data etc. based on constraints. There are three main types of commands or parts, 
+\begin{enumerate}
+    \item DDL - Data Definition Language, database structure creation and modification
+        \begin{enumerate}\tiny
+            \item CREATE TABLE
+            \item ALTER TABLE
+            \item DROP TABLE
+        \end{enumerate}
+    \item DML - Data Manipulation Language, queries data in structures 
+        \begin{enumerate}\tiny
+            \item SELECT
+            \item INSERT
+            \item UPDATE 
+            \item DELETE
+        \end{enumerate}
+    \item DCL - Data Control Language, handles authorization
+        \begin{enumerate}\tiny
+            \item GRANT
+            \item REVOKE
+        \end{enumerate}
+\end{enumerate}
+
+An RDBMS table consists of rows and columns, each column represents
+a field, and each row represents a record. 
+
+While some SQL commands are universal between the various database implementations 
+and are mandated by the language standards there are plenty of variants with local 
+tools and quirks.
+
+\subsection{SQL Syntax}
+In SQL you tell the language what you want, and the language works out how,
+a statement in SQL will often follow a pattern of [Verb~-~Subject~-~Condition]
+
+A verb gives the action that you want the database to take, eg. SELECT, INSERT, UPDATE, or DELETE,
+with natural results.
+
+The subject stipulates which database you want to work on, eg. a table.
+
+The condition filters your statement down to only elements satysfying some condition.
+
+An example statement would then be 
+
+\texttt{SELECT first\char`_name \\
+FROM employees \\
+WHERE YEAR(hire\char`_date) = 1999;}
+
+SQL statements include tokens, the most importnat are keywords, which are reserved
+for SQL use. Another type is literals, as usual these are constants and declared,
+they can take the usual form of Strings, Numbers, Bools, but also Times, and Timestamps
+as well as more.
+
+Further there are identifiers which refer to objects such as tables columns and indexes.
+
+Finally expressions can be combined from identifiers, literals and operators.
+
+\newpage
+
+\section{Selecting Data}
+\subsection{SELECT}
+The basic syntax of SELECT follows the structure
+
+\texttt{SELECT \\
+\hspace*{10pt} select\char`_list \\
+FROM \\ \hspace*{10pt} table\char`_list;}
+
+where \texttt{select\char`_list} is a comma seperated list of columns to select
+and \texttt{table\char`_list} is the table to select from. Naturally then the command 
+is evaluated "backwards", where the table is grabbed first.
+
+You can use \texttt{*} as a generic keyword for all available columns.
+Using \texttt{SELECT *} should in general be avoided for proper use since 
+you should know what you want to grab.
+
+An example on selecting information from a table named \textit{employees} is
+
+\texttt{SELECT\\
+\hspace*{10pt}employee\char`_id,\\
+\hspace*{10pt}first\char`_name,\\
+\hspace*{10pt}last\char`_name,\\
+\hspace*{10pt}hire\char`_date\\
+FROM\\
+\hspace*{10pt}employees;
+}
+
+You can perform calculations as part of a SELECT statement such as
+
+\texttt{SELECT\\
+\hspace*{10pt}salary,\\
+\hspace*{10pt}salary*1.05\\
+FROM\\
+\hspace*{10pt}employees;
+}
+
+which will give you the salary and the salary increased by 5\%. This creates a temporary column
+with a name depending on the implementation.
+
+You can pick the name of this temporary column by using AS. EG.
+
+\texttt{SELECT\\
+\hspace*{10pt}salary,\\
+\hspace*{10pt}salary*1.05 AS new\char`_salary\\
+FROM\\
+\hspace*{10pt}employees;
+}
+
+\newpage
+\section{Sorting Rows}
+\subsection{SORT BY}
+To get the output in a certain order, for instance ordering employees by wage you can use 
+ORDER BY to sort the output of a SELECT command. This type of command would look like
+
+\texttt{SELECT\\
+\hspace*{10pt}select\char`_list \\
+FROM\\
+\hspace*{10pt}table\char`_list \\
+ORDER BY\\
+\hspace*{10pt}sort\char`_expression [ASC | DESC];
+}
+
+where you can use ASC or DESC to select an ascending or descending sorting. By default
+the sort uses ASC. If you wish to use a secondary sort you can sort first by
+one expression then by another using 
+
+\texttt{SELECT\\
+\hspace*{10pt}select\char`_list \\
+FROM\\
+\hspace*{10pt}table\char`_list \\
+ORDER BY\\
+\hspace*{10pt}sort\char`_expression\char`_1 [ASC | DESC],\\
+\hspace*{10pt}sort\char`_expression\char`_2 [ASC | DESC];
+}
+
+For our employee example this could look like
+
+\texttt{SELECT\\
+\hspace*{10pt}first\char`_name,\\
+\hspace*{10pt}last\char`_name\\
+FROM\\
+\hspace*{10pt}employees \\
+ORDER BY\\
+\hspace*{10pt}salary DESC,\\
+\hspace*{10pt}hire\char`_date DESC;
+}
+
+to get the employee names in order of descending salry, with ties broken
+by who was hired most recently.
+
+You can terminate an ORDER BY clause with NULLS FIRST to bring any NULL values
+to the front, or NULLS LAST to send them to the back.
+
+This could look like
+
+\texttt{SELECT\\
+\hspace*{10pt}first\char`_name,\\
+\hspace*{10pt}last\char`_name,\\
+\hspace*{10pt}salary \\
+FROM\\
+\hspace*{10pt}employees \\
+ORDER BY\\
+\hspace*{10pt}salary NULLS FIRST;
+}
+
+\newpage
+\section{Limiting Rows}
+\subsection{SQL DISTINCT}
+By adding DISTINCT to a SELECT command you select only 
+entries with distinct entries in the first selected column.
+On our fake dataset set we can use 
+
+\texttt{SELECT DISTINCT\\
+\hspace*{10pt}salary
+FROM\\
+\hspace*{10pt}employees \\
+ORDER BY \\
+\hspace*{10pt}salary DESC;
+}
+
+which would give you a list of the salary levels that exist in the
+data set in descending order.
+
+DISTINCT treats all NULL values as being identical / selects only one. (usually).
+
+\subsection{SQL LIMIT}
+If you want to grab only the first k elements in a list you can use LIMIT, and if you want to skip some number of rows 
+at the beginning you can use OFFSET. Together this would look like 
+
+\texttt{SELECT\\
+\hspace*{10pt}column\char`_list\\
+FROM\\
+\hspace*{10pt}table1 \\
+ORDER BY \\
+\hspace*{10pt}column\char`_list DESC \\
+LIMIT \\
+\hspace*{10pt}row\char`_count \\
+OFFSET \\
+\hspace*{10pt}row\char`_to\char`_skip;
+}
+
+\subsection{SQL FETCH}
+LIMIT is not actually enforced by the SQL standard, but is widely supported. Modern SQL (post SQL:2008) standards include
+the OFFSET FETCH clause which behaves similarily. The syntax is 
+
+\texttt{OFFSET rows\char`_to\char`_skip \{ ROW | ROWS \} \\
+FETCH \{ FIRST | NEXT \} [ row\char`_count ] \{ ROW | ROWS \} ONLY
+}
+
+An example of this syntax would be 
+
+\texttt{SELECT\\
+\hspace*{10pt} first\char`_name,\\
+\hspace*{10pt} salary \\
+FROM \\
+\hspace*{10pt} employees \\
+ORDER BY \\
+\hspace*{10pt} salary DESC \\
+FETCH FIRST 5 ROWS ONLY;
+}
+
+\newpage
+\section{Filtering Data}
+\subsection{WHERE}
+By adding a WHERE clause to the end of a statement you can select only
+rows satysfying some condition. In SQL it is possible for a condition to 
+return NULL, true or false; WHERE only selects true evaluations. 
+
+WHERE can take a number of comparators / condtions including
+\begin{table}[hb]
+\centering
+\begin{tabular}{ll}
+    Symbol & Comparator \\
+    \hline
+    =  & Equal To \\
+    <> & Not Equal To \\
+    <  & Less than \\
+    >  & Greater than \\
+    <= & Less than equal to \\
+    >= & Greater than or equal
+\end{tabular}
+\end{table}
+
+An example of how you could apply this is 
+
+\texttt{SELECT\\
+\hspace*{10pt} first\char`_name,\\
+\hspace*{10pt} salary \\
+FROM \\
+\hspace*{10pt} employees \\
+WHERE \\
+\hspace*{10pt} salary > 14000 \\
+ORDER BY \\
+\hspace*{10pt} salary DESC;
+}
+
+This will grab employee names and salaries for employees 
+earning more than 14,000.
+
+\subsection{AND}
+An AND operator combines two boolean expressions that are being passed to another operator, only
+true and true combined will make true. and example of how AND is applied would be:
+
+\texttt{SELECT\\
+\hspace*{10pt} first\char`_name,\\
+\hspace*{10pt} salary \\
+FROM \\
+\hspace*{10pt} employees \\
+WHERE \\
+\hspace*{10pt} salary > 14000 \\
+\hspace*{10pt} AND job\char`_id = 9 \\
+ORDER BY \\
+\hspace*{10pt} salary DESC;
+}
+
+SQL evaluates comparisons in order which means that you can order them to 
+avoid eg. division by zero errors.
+
+\subsection{OR}
+OR acts just like AND but takes an or evaluation, if either condition is true, regardless of 
+if the other is NULL. OR short circuits if the first is true which can be useful.
+
+\subsection{BETWEEN}
+The between operator acts as a shortcut for taking both a 
+<= and a >=, the syntax is 
+
+\texttt{SELECT\\
+\hspace*{10pt} first\char`_name \\
+FROM \\
+\hspace*{10pt} employees \\
+WHERE salary BETWEEN 10000 AND 14000;
+}
+
+\subsection{NOT}
+The NOT operator is the negation of a truth value.
+
+\subsection{IN}
+IN checks if a value is in a discrete set of values,
+the syntax is \texttt{expression IN (value1, value2, ...)}
+
+\subsection{LIKE}
+LIKE performs pattern matching, where the \% character matches any length of free characters,
+the \char`_ matches a single character. For instance then \texttt{LIKE 'Kim\%;} would 
+match any string beginning with Kim. You can choose the escape character freely using ESCAPE excape\char`_character.
+Then any special character preceded by your escape character will be presented.
+
+\subsection{IS NULL}
+IS NULL returns true if a value is  NULL, this is nessecary because NULL is not equal to NULL.
+
+\newpage
+\section{Joining Tables}
+
+\end{document}
+
