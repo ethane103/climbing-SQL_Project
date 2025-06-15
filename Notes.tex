@@ -351,6 +351,155 @@ IS NULL returns true if a value is  NULL, this is nessecary because NULL is not 
 
 \newpage
 \section{Joining Tables}
+\subsection{INNER JOIN}
+Using a join lets you poll two tables at once, an INNER JOIN selects and joins those elements who have a matching selected key across the two tables.
+So if you have for instance a table of hired employees and a table of fired employees you could take:
+
+\texttt{SELECT\\
+\hspace*{10pt} first\char`_name \\
+\hspace*{10pt} last\char`_name \\
+FROM \\
+\hspace*{10pt} hired\char`employees \\
+INNER JOIN fired\char`employees ON hired\char`employees.id = hired\char`employees.id; 
+}
+
+By the use of table aliases we could shorten the above by renaming \texttt{hired\char`_employees} to \texttt{h}, and
+\texttt{fired\char`_employees} to h which would make the join \texttt{SELECT hired\char`_employees h INNER JOIN fired\char`_employees f ON h.id = f.id}
+
+\subsection{LEFT JOIN}
+A LEFT JOIN will take all elements from the primary table, and join in the additional columns from the extra table on a match condition. If the match condition isn't met, to fill in the new columns they are padded with null values.
+
+\subsection{RIGHT JOIN}
+The RIGHT JOIN behaves exactly as a LEFT JOIN but uses the tables in reverse order.
+
+You can stack JOINs to merge as many table as needed, by simply applying them sequentially.
+
+\subsection{Self Joining}
+You can apply a JOIN between a table and itself to shuffle around elements according to eachother or do special selections. An example of this would be
+
+\texttt{SELECT\\
+\hspace*{10pt} e.first\char`_name \\
+\hspace*{10pt} m.first\char`_name \\
+FROM \\
+\hspace*{10pt} employees e\\
+\hspace*{10pt} LEFT JOIN employees m ON m.employee\char`_id = e.manager\char`_id; \\
+ORDER BY \\
+\hspace*{10pt} manager NULLS FIRST;
+}
+
+
+\subsection{FULL OUTER JOIN}
+A FULL OUTER JOIN takes any entries from either of the tables, merging those that match, and null padding those that don't.
+
+\subsection{CROSS JOIN}
+A CROSS JOIN merges every row in the first table with every table in the second table leading to an n * m number of new rows.
+
+\section{Grouping Rows}
+\subsection{GROUP BY}
+Suppose that you have a list that gives multiple rows that share identical entries in some column of interest. This could be for instance if many employees are employed by the same manager,
+if you then want to return the names of the managers whose employees meet some criteria, but don't want a large number 
+of duplicate manager entries you can use GROUP BY.
+
+The syntax is: 
+
+\texttt{SELECT\\
+\hspace*{10pt} column \\
+FROM \\
+\hspace*{10pt} table\char`_name\\
+GROUP BY \\
+\hspace*{10pt} column;
+}
+
+or for multiple columns and with some aggregating function,
+
+\texttt{SELECT\\
+\hspace*{10pt} column1 \\
+\hspace*{10pt} column2 \\
+\hspace*{10pt} aggregate\char`_function (column3) \\
+FROM \\
+\hspace*{10pt} table\char`_name\\
+GROUP BY \\
+\hspace*{10pt} column;
+}
+
+an example aggregate function here would be COUNT, which would give you an extra column detailing how many entries were grouped.
+
+
+\subsection{HAVING}
+HAVING allows you to filter on the results of a GROUP, if run without a group it behaves like a WHERE would.
+
+\subsection{GROUPING SETS}
+GROUPING SETS lets you construct multiple groupings in the same way as GROUP BY constructs one.
+
+The syntax would be eg.
+
+\texttt{SELECT\\
+\hspace*{10pt} column1 \\
+\hspace*{10pt} column2 \\
+\hspace*{10pt} aggregate\char`_function (column3) \\
+FROM \\
+\hspace*{10pt} table\char`_name\\
+GROUP BY \\
+\hspace*{10pt} GROUPING SETS \\
+\hspace*{10pt} \hspace*{10pt} (column1),
+\hspace*{10pt} \hspace*{10pt} (column1, column 2),
+\hspace*{10pt} \hspace*{10pt} ();
+}
+
+\subsection{ROLLUP}
+ROLLUP works much like a plain group by, but includes a hierarchy, where the results are presented subdivided by subgroups of 
+column2 matches within column1 matches, then all column1 matches.
+
+\texttt{SELECT\\
+\hspace*{10pt} column1 \\
+\hspace*{10pt} column2 \\
+\hspace*{10pt} aggregate\char`_function (column3) \\
+FROM \\
+\hspace*{10pt} table\char`_name\\
+GROUP BY\\
+\hspace*{10pt} ROLLUP (column1, column2);
+}
+
+\subsection{CUBE}
+CUBE behaves like a standard GROUP BY, but takes all possible combinations of subgroups between 
+the columns presented. The syntax is:
+
+\texttt{SELECT\\
+\hspace*{10pt} column1 \\
+\hspace*{10pt} column2 \\
+\hspace*{10pt} aggregate\char`_function (column3) \\
+FROM \\
+\hspace*{10pt} table\char`_name\\
+GROUP BY\\
+\hspace*{10pt} CUBE (column1, column2);
+}
+
+\newpage
+\section{Set Operations}
+\subsection{UNION}
+A UNION operation lets you combine two select statements into one output so long as the SELECTs give output tables with the same number of columns, the syntax for UNION is:
+
+\texttt{SELECT\\
+\hspace*{10pt} column1 \\
+\hspace*{10pt} column2 \\
+FROM \\
+\hspace*{10pt} table1\\
+UNION \\
+SELECT \\
+\hspace*{10pt} column3 \\
+\hspace*{10pt} column4 \\
+FROM \\
+\hspace*{10pt} table2;
+}
+
+This kind of operation would let you for instance grab all the ids from two tables, or wages and names from two seperate department tables. The output takes the column names from the final SELECT, UNION also removes
+any full duplicate rows, if this isn't the desired behaivour you can use UNION ALL.
+
+\subsection{INTERESECT}
+INTERESECT behaves like UNION but takes only the intersection between the two tables, ie. the rows that are present in both.
+
+\subsection{MINUS}
+MINUS allows you to take the entries of the first SELECT that don't exist in the second SELECT.
 
 \end{document}
 
