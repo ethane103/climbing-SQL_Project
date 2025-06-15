@@ -499,7 +499,60 @@ any full duplicate rows, if this isn't the desired behaivour you can use UNION A
 INTERESECT behaves like UNION but takes only the intersection between the two tables, ie. the rows that are present in both.
 
 \subsection{MINUS}
-MINUS allows you to take the entries of the first SELECT that don't exist in the second SELECT.
+MINUS allows you to take the entries of the first SELECT that don't exist in the second SELECT, again with the same syntax as a UNION.
+
+\newpage
+\section{Managing Tables}
+\subsection{CREATE TABLE}
+To create a new table you use the CREATE TABLE command, which takes column names, column datatypes and potentially restrictions on the data stored in the column in the
+form of a condition. The syntax is:
+
+\texttt{CREATE TABLE table\char`_name ( \\
+\hspace*{10pt} column1 datatype constraint, \\
+\hspace*{10pt} column2 datatype constraint, \\
+\hspace*{10pt} ... \\
+);}
+
+If you run CREATE TABLE with a table name that already exists you'll get an error, but you can use IF NOT EXIST to
+condition the creation of the new table on that no table with that name exists already, and then you're free to decide 
+how to handle that case yourself.
+
+An example of a common constriant would be NOT NULL which will prevent any NULLS from being inserted into that column,
+and any attempts to alter the table in such a way that NULLs would be present will fail.
+
+\subsection{Primary Key}
+A primary key is the column, or set of columns that acts as a unique ID / hash for each row, a key then
+obviously has to be unique and not NULL (also each element in the key), but it also not allowed to be mutated. To sepcify a row or multiple rows as primary keys you can use the PRIMARY KEY specifier inside the table creation.
+
+This could look like:
+
+\texttt{CREATE TABLE employees ( \\
+\hspace*{10pt} id INT PRIMARY KEY, \\
+\hspace*{10pt} first\char`_name STRING NOT NULL, \\
+\hspace*{10pt} last\char`_name STRING NOT NULL \\
+);
+}
+
+You can create a table without a PRIMARY KEY, but it's a bad habit, once you have a table without a PRIMARY KEY you can
+add it using ALTER TABLE with the ADD PRIMARY KEY subcommand as,
+
+\texttt{ALTER TABLE employees \\
+ADD PRIMARY KEY (id);
+}
+
+\subsection{DROP TABLE}
+To delete a table you use the DROP TABLE statement, simply write:
+
+\texttt{DROP TABLE table\char`_name;}
+
+This is very dangerous since the table is gone forever as well as any information that isn't stored in another table.
+
+\subsection{IDENTITY}
+An IDENTITY column assigns a unique iterated INTEGER in the column which can be a very convienient way to get a good PRIMARY KEY, you can pass a number of arguments, 
+just as usual the name and datatype (A kind of INTEGER), but also select if it's mutable or not, what value to start on, increment, wether to restart, a minimum value, a maximum value, and 
+if it's caching. The syntax is 
+
+\texttt{column\char`_name datatype GENERATED { ALWAYS | BY DEFAULT } ?AS IDENTITY? [options]}
 
 \end{document}
 
