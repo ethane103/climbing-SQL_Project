@@ -441,8 +441,8 @@ FROM \\
 \hspace*{10pt} table\char`_name\\
 GROUP BY \\
 \hspace*{10pt} GROUPING SETS \\
-\hspace*{10pt} \hspace*{10pt} (column1),
-\hspace*{10pt} \hspace*{10pt} (column1, column 2),
+\hspace*{10pt} \hspace*{10pt} (column1), \\
+\hspace*{10pt} \hspace*{10pt} (column1, column 2), \\
 \hspace*{10pt} \hspace*{10pt} ();
 }
 
@@ -553,6 +553,176 @@ just as usual the name and datatype (A kind of INTEGER), but also select if it's
 if it's caching. The syntax is 
 
 \texttt{column\char`_name datatype GENERATED { ALWAYS | BY DEFAULT } ?AS IDENTITY? [options]}
+
+\subsection{ALTER TABLE}
+ALTER TABLE changes the structure of an existing table, an example of this is shown under 
+the PRIMARY KEY suit. Possible commands that can be used are \texttt{ADD COLUMN} to add columns, \texttt{ALTER COLUMN}, DROP COLUMN, 
+TRUNCATE TABLE which can be used to empty a table of it's data.
+
+\subsection{FOREIGN KEY}
+By using the FOREIGN KEY keyword when creating a table you can create a link between two tables, where a set of columns in one is set to be made up exclusively by keys to another table,
+in this way you can follow those keys to reach entries in the other table. This imposes a restriction on the FOREIGN KEY column that entries in it must exist as keys in linked
+table. 
+
+The syntax for creating a table with a FOREIGN KEY is
+
+\texttt{CREATE TABLE table\char`_name (\\
+\hspace*{10pt} column1, \\
+\hspace*{10pt} ... \\
+\hspace*{10pt} columnn, \\
+\hspace*{10pt} FOREIGN KEY (foreign\char`_id) REFERENCES (foreign\char`_table)\\
+);
+}
+
+\subsection{UNIQUE}
+When creating a column you can use the UNIQUE constraint to force each column entry to be unqiue, this is done as usal when creating constraints,
+eg. 
+
+\texttt{CREATE TABLE table\char`_name (\\
+\hspace*{10pt} column1 datatype UNIQUE, \\ 
+\hspace*{10pt} ... \\
+);
+}
+
+or if two (or more) columns should unique together,
+
+\texttt{CREATE TABLE table\char`_name (\\
+\hspace*{10pt} column1 datatype, \\
+\hspace*{10pt} column2 datatype, \\
+\hspace*{10pt} UNIQUE (column1, column2) \\
+);
+}
+
+\subsection{SQL CHECK}
+For a generic condition you can use CHECK when creating a column, as 
+
+\texttt{CREATE TABLE table\char`_name ( \\
+\hspace*{10pt} column data\char`_type CHECK(boolean\char`_expression), \\
+\hspace*{10pt} ...
+);
+}
+
+\section{Adding, removing and changing data}
+\subsection{INSERT INTO}
+For a table with a set of columns (column1, column2, column3, column4) you can insert a hypothetical entry with 
+
+\texttt{INSERT INTO\\
+\hspace*{10pt} table\char`_name (column1, column2, column3) \\
+VALUES \\
+\hspace*{10pt} (value1, value2, value3);
+}
+
+Not that you are allowed to specify only a subset of the columns in the table, if you do this, unspecified columns will be
+filled by default values, which are unless specified NULL, but each column can have a default value specified during creation.
+
+\subsection{UPDATE}
+UPDATE lets you modify one or more rows on a condition. The syntax is 
+
+\texttt{SQL UPDATE \\
+SET \\
+\hspace*{10pt} column1 = value1, \\ 
+\hspace*{10pt} column2 = value2 \\
+WHERE \\
+\hspace*{10pt} condition;
+}
+
+\subsection{DELETE}
+To delete a (set of) row(s) from a table yuo use the DELETE statement, the syntax is 
+
+\texttt{DELETE FROM table\char`_name \\
+WHERE condition;
+}
+
+or you can run it without a \texttt{WHERE} which will delete every entry in the table.
+
+\section{VIEWS and TRIGGERS}
+\subsection{VIEWS}
+A view is a fixed query that is stored as part of the database, the syntax is,
+
+\texttt{CREATE VIEW [IF NOT EXISTS] view\char`_name \\
+AS
+query}
+
+views are a convienient way to simplify SQL code or make it more acsessible to other users, as well as to 
+encapsulate actions.
+
+You accses a view the same way you would access a table, but what is stored internally is not the data as a table, but the
+query.
+
+To replace the contents of a view you can use \texttt{CREATE OR REPLACE} in the place of \texttt{CREATE}.
+
+\subsection{TRIGGERS}
+An SQL trigger is an action associated to a table that executes on a given action on that table, it can trigger on any of the actions
+\texttt{INSERT}, \texttt{UPDATE}, \texttt{DELETE} or \texttt{TRUNCATE}. The syntax for a trigger is 
+
+\texttt{CREATE TRIGGER trigger\char`_name \\
+\char`[BEFORE | AFTER\char`] event \\
+ON table\char`_name trigger\char`_type \\
+BEGIN  \\
+\hspace*{10pt} ... trigger actions \\
+END }
+
+Triggers can be used for logging of access or modification of sensitive data or checking data validity.
+
+\section{Conditonal Expressions and Functions}
+\subsection{CASE Expressions}
+A CASE expression is a standard switch expression which returns a given value on a given condition, you can use an ELSE at the end to set a default run 
+and if you don't set an ELSE it will return NULL.
+
+The syntax is:
+
+\texttt{CASE expression \\
+\hspace*{10pt} WHEN a THEN ret\char`_a \\
+\hspace*{10pt} WHEN b THEN ret\char`_b \\
+... \\
+\hspace*{10pt} ELSE ret\char`_else
+END
+}
+
+\subsection{COALESCE}
+COALESCE is a function in SQL that takes as input(s) a number of arguments and returns the first (from the left) non NULL value, with fallback of returning NULL if 
+all of the inputs are NULL. 
+
+The Syntax is:
+
+\texttt{COALESCE(arg1, arg2, ..., argn)}
+
+or in a SELECT:
+
+\texttt{SELECT \\
+\hspace*{10pt} COALESCE(arg1, arg2, ..., argn) result;}
+
+
+You can for instance use a COALESCE as part of a SELECT statement to swap out NULLS for a different default.
+
+\subsection{NULLIF}
+NULLIF is a function that returns NULL if it's two arguments are equal. The syntax is:
+
+\texttt{NULLIF(arg1,arg2)}
+
+or in a SELECT:
+
+\texttt{SELECT \\
+\hspace*{10pt} NULLIF(arg1, arg2) result;}
+
+\section{SUBQUERY}
+A SUBQUERY is a query nested in or used as part of another query. A clear example of this would be running a SELECT on condition of the result of another, 
+
+\texttt{SELECT \\
+\hspace*{10pt} column1, \\
+... \\
+\hspace*{10pt} columnn \\
+FROM \\
+\hspace*{10pt} table \\
+WHERE \\
+\hspace*{10pt} columnk = (\\
+\hspace*{10pt} \hspace*{10pt} SELECT \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} MAX(columnm) \\
+\hspace*{10pt} \hspace*{10pt} FROM \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} employees \\ 
+);}
+
+
 
 \end{document}
 
