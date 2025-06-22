@@ -724,5 +724,119 @@ WHERE \\
 
 
 
+\newpage
+\section{Subqeuries}
+\subsection{Correlated Subqeuries}
+If you want each element to be subject to some criteria according to it's properties you end up with a correlated subquery. Take for instance the example below:
+
+\texttt{SELECT \\
+\hspace*{10pt} name, \\
+\hspace*{10pt} id, \\
+\hspace*{10pt} salary  \\
+FROM \\
+\hspace*{10pt} employees e1\\
+WHERE \\
+\hspace*{10pt} salary > ( \\
+\hspace*{10pt} \hspace*{10pt} SELECT \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} AVG(salary) avg\char`_salary \\
+\hspace*{10pt} \hspace*{10pt} FROM \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} employees e2  \\
+\hspace*{10pt} \hspace*{10pt} WHERE \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} e2.department\char`_id =  e1.department\char`_id \\
+\hspace*{10pt} ) 
+}
+
+In the query above, each entry is checked by it's department id, which is used to find the average wage within it's department,
+then only records who'se salaries are above the average for their department are selected.
+
+\subsection{ALL}
+If you want to check if a comparison holds for a given selected list of results you can use ALL. The syntax of ALL is:
+
+\begin{texttt} value ALL comparison\char`_operator (subquery) \end{texttt}
+
+An example use case would be if you want to check wether or not all of the managers make more than 100,000\$. Then you could run 
+the comparison
+
+\begin{texttt} 100000 ALL <= ( \\
+\hspace*{10pt} SELECT \\
+\hspace*{10pt} \hspace*{10pt} salary \\
+\hspace*{10pt} FROM \\
+\hspace*{10pt} \hspace*{10pt} employees \\
+\hspace*{10pt} WHERE \\
+\hspace*{10pt} \hspace*{10pt} id = manager\char`_id;\\
+)
+\end{texttt}
+
+You could also use an ALL as part of making a query. This could be done for instance as below
+
+\begin{texttt} SELECT \\
+\hspace*{10pt} name
+FROM \\
+\hspace*{10pt} employees \\
+WHERE \\
+\hspace*{10pt} salary > ALL (
+\hspace*{10pt} \hspace*{10pt} SELECT \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} salary \\
+\hspace*{10pt} \hspace*{10pt} FROM \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} employees \\
+\hspace*{10pt} \hspace*{10pt} WHERE \\
+\hspace*{10pt} \hspace*{10pt} \hspace*{10pt} department\char`_id = 3 \\
+\hspace*{10pt} )
+\end{texttt}
+
+Which would return a list of all workers who'se salaries exceed all of the salaries in department 3, which is of course
+the same as exceeding the highest salary in department 3.
+
+\subsection{ANY}
+ANY runs the same type of check as ALL but returns true if any of the checks returns true.
+
+\subsection{EXISTS}
+EXISTS works very similarily to ALL and ANY but instead checks wether or not a query retruns at least one row. The syntax is 
+
+\begin{texttt}EXISTS (query)\end{texttt}
+
+Just like the above two this can also be used for a WHERE condition within a larger selection, where it would be checking some subquery.
+
+\section{Aggregating Functions}
+\subsection{AVG}
+AVG takes, as the name implies, the average value of a set. The syntax for AVG is 
+
+\begin{texttt}AVG([ALL|DISTINCT] expression)\end{texttt}
+
+When run as part of a SELECT AVG can look like this:
+
+\begin{texttt}
+SELECT \\
+\hspace*{10pt} AVG(averaged\char`_column) \\
+FROM \\
+\hspace*{10pt} table \\
+...
+\end{texttt}
+
+AVG can also benifit from a GROUP BY, for instance
+
+\begin{texttt}
+SELECT \\
+\hspace*{10pt} AVG(salary) avg\char`_salary \\
+FROM \\
+\hspace*{10pt} employees \\
+GROUP BY \\
+\hspace*{10pt} department\char`_id\\
+\end{texttt}
+
+which would give the average salary for each department.
+
+\subsection{ANY\char`_VALUE}
+ANY VALUE, just like AVG is an aggregating function, so they work in very similar ways, but ANY VALUE will select an arbitrary value from the group, rather than 
+perform any fancy operations.
+
+\subsection{COUNT}
+COUNT as the name implies counts entries in it's group.
+
+\subsection{MAX/MIN}
+MAX and MIN take the maximum and minimum value in a group represectively.
+
+\subsection{SUM}
+SUM takes the SUM of every (non NULL) entry in it's group.
 \end{document}
 
