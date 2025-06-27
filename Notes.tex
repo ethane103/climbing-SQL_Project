@@ -705,7 +705,9 @@ or in a SELECT:
 \texttt{SELECT \\
 \hspace*{10pt} NULLIF(arg1, arg2) result;}
 
-\section{SUBQUERY}
+\newpage
+\section{Subqeuries}
+\subsection{SUBQUERY}
 A SUBQUERY is a query nested in or used as part of another query. A clear example of this would be running a SELECT on condition of the result of another, 
 
 \texttt{SELECT \\
@@ -722,10 +724,6 @@ WHERE \\
 \hspace*{10pt} \hspace*{10pt} \hspace*{10pt} employees \\ 
 );}
 
-
-
-\newpage
-\section{Subqeuries}
 \subsection{Correlated Subqeuries}
 If you want each element to be subject to some criteria according to it's properties you end up with a correlated subquery. Take for instance the example below:
 
@@ -797,6 +795,7 @@ EXISTS works very similarily to ALL and ANY but instead checks wether or not a q
 
 Just like the above two this can also be used for a WHERE condition within a larger selection, where it would be checking some subquery.
 
+\newpage
 \section{Aggregating Functions}
 \subsection{AVG}
 AVG takes, as the name implies, the average value of a set. The syntax for AVG is 
@@ -826,8 +825,8 @@ GROUP BY \\
 
 which would give the average salary for each department.
 
-\subsection{ANY\char`_VALUE}
-ANY VALUE, just like AVG is an aggregating function, so they work in very similar ways, but ANY VALUE will select an arbitrary value from the group, rather than 
+\subsection{ANY VALUE}
+ANY\char`_VALUE, just like AVG is an aggregating function, so they work in very similar ways, but ANY VALUE will select an arbitrary value from the group, rather than 
 perform any fancy operations.
 
 \subsection{COUNT}
