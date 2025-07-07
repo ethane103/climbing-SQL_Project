@@ -52,7 +52,7 @@ class wall_page(page):
         self.wallFrame.pack(side=tk.BOTTOM)
 
         self.info = tk.Label(self.infoFrame, text = "You got to the wall page! Filter by holds, difficulty, gym and rating", bg=self.bg)   
-        self.info.pack(expand=True, sticky = 'n')        
+        self.info.pack(expand=True, side = 'top')        
 
         self.scrollbar = tk.Scrollbar(self.wallFrame)
         self.scrollbar.pack(side = "right", fill="both")
@@ -60,9 +60,14 @@ class wall_page(page):
         self.walls = []
         self.wall_list = None
 
-        self.hold_include= []
-        self.hold_exclude= []
+        self.holdStates= []
         self.createHoldSubframe()
+
+        self.filterButton = tk.Button(self, text="Apply Filter", command = self.remakeList)
+        self.filterButton.pack()
+
+        self.diffStates = []
+        self.createDiffSubframe()
 
         
 
@@ -70,13 +75,16 @@ class wall_page(page):
         self.walls = self.autoQuery.getWalls(args = args)
 
     def remakeList(self, fill = True):
-        if not self.wall_list is None: self.wall_list.delete()
-        
-        self.wall_list = ttk.Treeview(self.wallFrame)
-        self.wall_list.pack(expand=True, side = "left", fill = "both")
+        args = self.generateArgs()
+        self.getWalls(args)
 
-        self.wall_list.config(yscrollcommand = self.scrollbar.set)
-        self.scrollbar.config(command = self.wall_list.yview)
+        if not self.wall_list is None: 
+            [self.wall_list.delete(item) for item in self.wall_list.get_children()]
+        else:
+            self.wall_list = ttk.Treeview(self.wallFrame)
+            self.wall_list.pack(expand=True, side = "left", fill = "both")
+            self.wall_list.config(yscrollcommand = self.scrollbar.set)
+            self.scrollbar.config(command = self.wall_list.yview)
 
         if fill:
             self.wall_list["columns"] = self.walls.columns.tolist() # type: ignore
@@ -89,23 +97,70 @@ class wall_page(page):
     def createHoldSubframe(self):
         self.holdsList = sum(self.autoQuery.getHolds().values.tolist(), []) # type: ignore
         self.holdSubFrame = tk.Frame(self.infoFrame, bg=self.bg)
-        self.holdSubFrame.pack(side = tk.BOTTOM)
+        self.holdSubFrame.pack()
+        holdGuideFree = tk.Label(self.holdSubFrame, text = "Free Holds", bg=self.bg)  
         holdGuideOn = tk.Label(self.holdSubFrame, text = "Select holds to mandate", bg=self.bg)   
         holdGuideOff = tk.Label(self.holdSubFrame, text = "Select holds to exclude", bg=self.bg)  
-        holdGuideOn.grid(row=1, column=0, sticky='n')
-        holdGuideOff.grid(row=2, column=0, sticky='s')
+        holdGuideFree.grid(row=1, column=0, sticky='n')
+        holdGuideOn.grid(row=2, column=0)   
+        holdGuideOff.grid(row=3, column=0, sticky='s')
         
         for idx, hold in enumerate(self.holdsList):
-            onState = tk.IntVar(value = 0) # 0 do nothing, 1 include,
-            offState = tk.IntVar(value = 0) # 0 do nothing, 1 iexclude, 
-            self.hold_include.append(onState)
-            self.hold_exclude.append(offState)
-            hold_on_cb = tk.Checkbutton(self.holdSubFrame, variable=onState)
-            hold_off_cb = tk.Checkbutton(self.holdSubFrame, variable=offState)
+            holdState = tk.IntVar(value = 0) # -1 exclude, 0 do nothing, 1 include,
+            self.holdStates.append(holdState)
+            hold_free_cb = ttk.Radiobutton(self.holdSubFrame, variable=holdState, value = 0)
+            hold_on_cb = ttk.Radiobutton(self.holdSubFrame, variable=holdState, value=  1)
+            hold_off_cb = ttk.Radiobutton(self.holdSubFrame, variable=holdState, value = -1)
             hold_names = tk.Label(self.holdSubFrame, text = hold, bg=self.bg)  
             hold_names.grid(row = 0, column=idx+1, sticky='n')
-            hold_on_cb.grid(row = 1, column=idx+1)
-            hold_off_cb.grid(row = 2, column=idx+1, sticky='s')
+            hold_free_cb.grid(row = 1, column=idx+1)
+            hold_on_cb.grid(row = 2, column=idx+1)
+            hold_off_cb.grid(row = 3, column=idx+1, sticky='s')
+
+    def createDiffSubframe(self):
+        self.diffSubFrame = tk.Frame(self.infoFrame, bg=self.bg)
+        self.diffSubFrame.pack(side = tk.BOTTOM)
+
+        self.diffs = ['V' + a for a in ['B'] + [str(num) for num in range(0,13)]]
+
+        diffGuide = tk.Label(self.diffSubFrame, text = "Pick your difficulties", bg=self.bg)   
+        diffGuide.grid(row = 0, column=0, columnspan=len(self.diffs),sticky='n')
+
+        for idx, diff in enumerate(self.diffs):
+            diffState = tk.IntVar(value = 0) # -1 exclude, 0 do nothing, 1 include,
+            self.diffStates.append(diffState)
+            diffCB = ttk.Checkbutton(self.diffSubFrame, variable=diffState, offvalue = 0, onvalue='1', text=diff)
+            diffCB.grid(row = 1, column=idx, sticky='s')           
+
+
+    def generateArgs(self):
+        args = {}
+        holdCons = {}
+        diffCons = []
+
+        for idx, hold in enumerate(self.holdsList):
+            match self.holdStates[idx].get():
+                case 0:
+                    pass
+                case 1:
+                    holdCons[hold] = 'HAS'
+                case -1:
+                    holdCons[hold] = '!HAS'
+
+        args['holdCons'] = holdCons
+
+        for idx, diff in enumerate(self.diffs):
+            match self.diffStates[idx].get():
+                case 0:
+                    pass
+                case 1:
+                    diffCons.append(diff)
+        
+        if diffCons:
+            args['difficulties'] = diffCons
+        
+        return args
+
 
     def on_show(self):
         self.getWalls()
