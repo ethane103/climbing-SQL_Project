@@ -55,6 +55,7 @@ class autoQuery():
         SELECT 
                walls.id AS wall_id,
                gyms.name AS gym_name,
+               gyms.id AS gym_id,
                walls.name AS name,
                walls.rating,
                walls.difficulty
@@ -62,7 +63,7 @@ class autoQuery():
         INNER JOIN gyms ON walls.gym = gyms.id
         """
 
-        initial = True
+        andWhere = 'WHERE'
         for key, value in args.items():
             match key:
                 case 'holdCons':
@@ -74,10 +75,6 @@ class autoQuery():
                                 yesNo = ' NOT'
                             case _:
                                 yesNo = ''
-                        andWhere = 'AND'
-                        if initial:
-                            andWhere = 'WHERE'
-                            initial = False
                         query = query + f"""{andWhere}{yesNo} EXISTS (
                                             SELECT 1 FROM
                                                 wall_holds
@@ -87,16 +84,17 @@ class autoQuery():
                                             AND
                                                 holds.name = '{hold}')
                                             """
+                        andWhere = 'AND'
+                        
                 case 'difficulties':
                     innerstring = "','".join(value)
                     diffString = f"('{innerstring}')"
-
-                    andWhere = 'AND'
-                    if initial:
-                        andWhere = 'WHERE'
-                        initial = False
-                    
+                
                     query = query + f"{andWhere} walls.difficulty IN {diffString} \n"
+                    andWhere = 'AND' 
+                
+                case 'gym_id':
+                    query = query + f"{andWhere} gyms.id = {value} \n"
                         
         query = query + """ORDER BY walls.rating DESC, gyms.name, walls.id"""
         print(query)
@@ -108,6 +106,11 @@ class autoQuery():
         return returnVal
 
     def getHolds(self):
-        query = "SELECT * FROM holds"
+        query = "SELECT id, name FROM holds"
         holds = self.mC.execute(query)
         return holds
+    
+    def getGyms(self):
+        query = "SELECT id, name, state, city, zipcode, address FROM gyms"
+        gyms = self.mC.execute(query)
+        return gyms

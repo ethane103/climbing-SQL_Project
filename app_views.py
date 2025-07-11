@@ -69,6 +69,8 @@ class wall_page(page):
         self.diffStates = []
         self.createDiffSubframe()
 
+        self.gym_id = None
+        self.createGymSubframe()
         
 
     def getWalls(self, args = {}):
@@ -96,7 +98,7 @@ class wall_page(page):
 
     def createHoldSubframe(self):
         self.holdsList = sum(self.autoQuery.getHolds().values.tolist(), []) # type: ignore
-        self.holdSubFrame = tk.Frame(self.infoFrame, bg=self.bg)
+        self.holdSubFrame = tk.Frame(self.infoFrame, bg=self.bg, padx = 0.5, pady=0.5)
         self.holdSubFrame.pack()
         holdGuideFree = tk.Label(self.holdSubFrame, text = "Free Holds", bg=self.bg)  
         holdGuideOn = tk.Label(self.holdSubFrame, text = "Select holds to mandate", bg=self.bg)   
@@ -119,7 +121,7 @@ class wall_page(page):
 
     def createDiffSubframe(self):
         self.diffSubFrame = tk.Frame(self.infoFrame, bg=self.bg)
-        self.diffSubFrame.pack(side = tk.BOTTOM)
+        self.diffSubFrame.pack(side = tk.BOTTOM, padx = 0.5, pady=0.5)
 
         self.diffs = ['V' + a for a in ['B'] + [str(num) for num in range(0,13)]]
 
@@ -132,6 +134,22 @@ class wall_page(page):
             diffCB = ttk.Checkbutton(self.diffSubFrame, variable=diffState, offvalue = 0, onvalue='1', text=diff)
             diffCB.grid(row = 1, column=idx, sticky='s')           
 
+    def createGymSubframe(self):
+        self.gymSubframe = tk.Frame(self.infoFrame, bg = self.bg)
+        self.gymSubframe.pack(padx=0.5, pady=0.5)
+
+        self.gyms = self.autoQuery.getGyms()
+        self.gym_id = tk.StringVar(value = None)
+        self.gymText = tk.Label(self.gymSubframe, text="Select which Gym to Filter By")
+        self.gymText.pack(side='top', pady=0.1)
+        self.gymdrop = tk.OptionMenu(self.gymSubframe, variable= self.gym_id, value='')
+
+        for gym, id in zip(self.gyms.values, self.gyms.index):
+            self.gymdrop['menu'].add_command(label = gym[0], command = tk._setit(self.gym_id,id))
+        
+        #self.gymdrop['menu'].add_command(label = 'No Selection', command = tk._setit(self.gym_id,''))
+        self.gymdrop.pack()
+            
 
     def generateArgs(self):
         args = {}
@@ -158,6 +176,9 @@ class wall_page(page):
         
         if diffCons:
             args['difficulties'] = diffCons
+        
+        if not len(self.gym_id.get()) == 0:
+            args['gym_id'] = self.gym_id.get()
         
         return args
 
