@@ -53,22 +53,67 @@ class autoQuery():
     def __init__(self):
         self.mC = managedConnection()
 
-    def getWalls(self, args = {}):
-        baseQuery = """
+    def getWalls(self, args = {}, returnQuery = False):
+        query = """
         SELECT 
                walls.id AS wall_id,
                gyms.name AS gym_name,
+               gyms.id AS gym_id,
                walls.name AS name,
                walls.rating,
                walls.difficulty
         FROM walls
         INNER JOIN gyms ON walls.gym = gyms.id
-        ORDER BY walls.rating DESC, gyms.name, walls.id
         """
-        walls = self.mC.execute(baseQuery)
-        return walls
+
+        andWhere = 'WHERE'
+        for key, value in args.items():
+            match key:
+                case 'holdCons':
+                    for idx, (hold, state) in enumerate(value.items()):
+                        match state:
+                            case 'HAS':
+                                yesNo = ''
+                            case '!HAS':
+                                yesNo = ' NOT'
+                            case _:
+                                yesNo = ''
+                        query = query + f"""{andWhere}{yesNo} EXISTS (
+                                            SELECT 1 FROM
+                                                wall_holds
+                                            INNER JOIN holds ON wall_holds.hold_id = holds.id
+                                            WHERE
+                                                walls.id = wall_holds.wall_id
+                                            AND
+                                                holds.name = '{hold}')
+                                            """
+                        andWhere = 'AND'
+                        
+                case 'difficulties':
+                    innerstring = "','".join(value)
+                    diffString = f"('{innerstring}')"
+                
+                    query = query + f"{andWhere} walls.difficulty IN {diffString} \n"
+                    andWhere = 'AND' 
+                
+                case 'gym_id':
+                    query = query + f"{andWhere} gyms.id = {value} \n"
+                        
+        query = query + """ORDER BY walls.rating DESC, gyms.name, walls.id"""
+        print(query)
+        walls = self.mC.execute(query)
+
+        returnVal = walls
+        if returnQuery:
+            returnVal = (walls, query)
+        return returnVal
 
     def getHolds(self):
-        query = "SELECT * FROM holds"
+        query = "SELECT id, name FROM holds"
         holds = self.mC.execute(query)
         return holds
+    
+    def getGyms(self):
+        query = "SELECT id, name, state, city, zipcode, address FROM gyms"
+        gyms = self.mC.execute(query)
+        return gyms
