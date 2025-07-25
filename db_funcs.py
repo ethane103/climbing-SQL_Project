@@ -4,9 +4,10 @@ from dotenv import load_dotenv
 import os
 
 class managedConnection():
-    def __init__(self):
+    def __init__(self, cmdTracker = None):
         self.cnxn = self.connect()
         self.lastquery = None
+        self.cmdTracker = cmdTracker
 
     def execute(self, query, returnType = 'df'):
         cursor = self.cnxn.cursor()
@@ -29,7 +30,9 @@ class managedConnection():
         cursor.close()
         del(cursor)
 
-        self.lastquery = query
+        if not self.cmdTracker is None:
+            self.cmdTracker.track(query)
+        
         return returnVal
 
     def connect(self):
@@ -48,10 +51,15 @@ class managedConnection():
 
         self.cnxn = cnxn
         return cnxn
+    
+    def setTracker(self, cmdTracker):
+        self.cmdTracker = cmdTracker
 
 class autoQuery():
+    singleConnect = managedConnection()
+
     def __init__(self):
-        self.mC = managedConnection()
+        self.mC = self.singleConnect
 
     def getWalls(self, args = {}, returnQuery = False):
         query = """
@@ -100,7 +108,6 @@ class autoQuery():
                     query = query + f"{andWhere} gyms.id = {value} \n"
                         
         query = query + """ORDER BY walls.rating DESC, gyms.name, walls.id"""
-        print(query)
         walls = self.mC.execute(query)
 
         returnVal = walls
@@ -117,3 +124,7 @@ class autoQuery():
         query = "SELECT id, name, state, city, zipcode, address FROM gyms"
         gyms = self.mC.execute(query)
         return gyms
+    
+    @classmethod
+    def getMC(cls):
+        return cls.singleConnect

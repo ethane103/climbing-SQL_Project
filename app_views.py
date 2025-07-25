@@ -201,5 +201,8 @@ class sql_viewer():
         self.label = tk.Label(self.window, textvariable=self.text, wraplength=700, justify="left")
         self.label.pack()
 
-    def updateText(self, str):
+        self.managedConnection = aQ().getMC()
+        self.managedConnection.setTracker(self)
+
+    def track(self, str):
         self.text.set(str)
