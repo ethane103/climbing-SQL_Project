@@ -198,7 +198,7 @@ class sql_viewer():
         self.text = tk.StringVar()
         self.text.set("No Commands Sent")
 
-        self.textdisp = tk.Text(self.window, font='Consolas', wrap="word", height=48, )
+        self.textdisp = tk.Text(self.window, font='Consolas', wrap="word", height=72)
         self.textdisp.pack()
 
         self.managedConnection = aQ().getMC()
