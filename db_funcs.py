@@ -2,6 +2,7 @@ import pyodbc
 import pandas as pd 
 from dotenv import load_dotenv
 import os
+from textwrap import dedent as dd
 
 class managedConnection():
     def __init__(self, cmdTracker = None):
@@ -62,7 +63,7 @@ class autoQuery():
         self.mC = self.singleConnect
 
     def getWalls(self, args = {}, returnQuery = False):
-        query = """
+        query = dd("""\
         SELECT 
                walls.id AS wall_id,
                gyms.name AS gym_name,
@@ -71,8 +72,11 @@ class autoQuery():
                walls.rating,
                walls.difficulty
         FROM walls
-        INNER JOIN gyms ON walls.gym = gyms.id
-        """
+        INNER JOIN 
+            gyms 
+        ON 
+            walls.gym = gyms.id
+        """)
 
         andWhere = 'WHERE'
         for key, value in args.items():
@@ -86,15 +90,21 @@ class autoQuery():
                                 yesNo = ' NOT'
                             case _:
                                 yesNo = ''
-                        query = query + f"""{andWhere}{yesNo} EXISTS (
-                                            SELECT 1 FROM
-                                                wall_holds
-                                            INNER JOIN holds ON wall_holds.hold_id = holds.id
-                                            WHERE
-                                                walls.id = wall_holds.wall_id
-                                            AND
-                                                holds.name = '{hold}')
-                                            """
+                        query = query + dd(f"""\
+
+                                            {andWhere}{yesNo} EXISTS (
+                                                SELECT 1 FROM
+                                                    wall_holds
+                                                INNER JOIN 
+                                                    holds 
+                                                ON 
+                                                    wall_holds.hold_id = holds.id
+                                                WHERE
+                                                    walls.id = wall_holds.wall_id
+                                                AND
+                                                    holds.name = '{hold}'
+                                            )
+                                            """)
                         andWhere = 'AND'
                         
                 case 'difficulties':

@@ -198,11 +198,13 @@ class sql_viewer():
         self.text = tk.StringVar()
         self.text.set("No Commands Sent")
 
-        self.label = tk.Label(self.window, textvariable=self.text, wraplength=700, justify="left")
-        self.label.pack()
+        self.textdisp = tk.Text(self.window, font='Consolas', wrap="word", height=48, )
+        self.textdisp.pack()
 
         self.managedConnection = aQ().getMC()
         self.managedConnection.setTracker(self)
 
+
     def track(self, str):
-        self.text.set(str)
+        self.textdisp.delete("1.0", tk.END)
+        self.textdisp.insert("1.0", str)
