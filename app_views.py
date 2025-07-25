@@ -144,7 +144,7 @@ class wall_page(page):
         self.gymText.pack(side='top', pady=0.1)
         self.gymdrop = tk.OptionMenu(self.gymSubframe, variable= self.gym_id, value='')
 
-        for gym, id in zip(self.gyms.values, self.gyms.index):
+        for gym, id in zip(self.gyms.values, self.gyms.index): # type: ignore 
             self.gymdrop['menu'].add_command(label = gym[0], command = tk._setit(self.gym_id,id))
         
         #self.gymdrop['menu'].add_command(label = 'No Selection', command = tk._setit(self.gym_id,''))
@@ -177,8 +177,8 @@ class wall_page(page):
         if diffCons:
             args['difficulties'] = diffCons
         
-        if not len(self.gym_id.get()) == 0:
-            args['gym_id'] = self.gym_id.get()
+        if not len(self.gym_id.get()) == 0: # type: ignore
+            args['gym_id'] = self.gym_id.get() # type: ignore
         
         return args
 
