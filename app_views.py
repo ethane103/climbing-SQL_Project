@@ -112,4 +112,18 @@ class wall_page(page):
         self.remakeList()
         super().on_show()
 
+class sql_viewer():
+    def __init__(self, root):
+        self.root = root
+        self.window = tk.Toplevel(root)
+        self.window.title("SQL Command Display")
+        self.window.geometry("800x800")
 
+        self.text = tk.StringVar()
+        self.text.set("No Commands Sent")
+
+        self.label = tk.Label(self.window, textvariable=self.text, wraplength=700, justify="left")
+        self.label.pack()
+
+    def updateText(self, str):
+        self.text.set(str)

@@ -6,6 +6,7 @@ import os
 class managedConnection():
     def __init__(self):
         self.cnxn = self.connect()
+        self.lastquery = None
 
     def execute(self, query, returnType = 'df'):
         cursor = self.cnxn.cursor()
@@ -27,6 +28,8 @@ class managedConnection():
         
         cursor.close()
         del(cursor)
+
+        self.lastquery = query
         return returnVal
 
     def connect(self):
