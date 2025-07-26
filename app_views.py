@@ -60,11 +60,12 @@ class wall_page(page):
         self.info = tk.Label(self.infoFrame, text = "You got to the wall page! Filter by holds, difficulty, gym and rating", bg=self.bg)   
         self.info.pack(expand=True, side = 'top')    
 
-        self.wallFrame.pack(side=tk.BOTTOM)
         self.wallFrame = tk.Frame(self)
+        self.wallFrame.pack(side=tk.BOTTOM)
         self.scrollbar = tk.Scrollbar(self.wallFrame)
         self.scrollbar.pack(side = "right", fill="both")
-
+        
+        # Internal list for storing walls
         self.walls = []
         self.wall_list = None
 
