@@ -15,6 +15,10 @@ class managedConnection():
 
     # Execute a query, allows you to select how you would like to recieve the SQL output, each query is given it's own single use cursor. Passes the query to the tracker.
     def execute(self, query, returnType = 'df'):
+        # Track
+        if not self.cmdTracker is None:
+            self.cmdTracker.track(query)
+        
         # Generate cursor, execute query, get results.
         cursor = self.cnxn.cursor()
         cursor.execute(query)
@@ -39,9 +43,7 @@ class managedConnection():
         cursor.close()
         del(cursor)
 
-        # Track
-        if not self.cmdTracker is None:
-            self.cmdTracker.track(query)
+
         
         # Return
         return returnVal
@@ -170,6 +172,54 @@ class autoQuery():
         gyms = self.mC.execute(query)
         return gyms
     
+    # More flexible gym selection, allows filtering on WHERE location[0] in location[1]
+    def getGymsIn(self, location:tuple):
+        query = dd(f"""\
+                    SELECT
+                        id, 
+                        name, 
+                        city, 
+                        address 
+                    FROM 
+                        gyms 
+                    WHERE 
+                        {location[0]} = '{location[1]}'""")
+        
+        return self.mC.execute(query)
+    
+    # Gets a list of all the users, either just id and email for presenatation, or all information on all users for testing
+    def getUsers(self, full = False):
+        if not full: return self.mC.execute("SELECT id, email FROM users")
+        else: return self.mC.execute("SELECT * FROM users")
+
+    # Gets a given user, there are some basic (non none, non zero length) requirements posed on the uid, but this can still easily fail on a bad id
+    def getUser(self, uid):
+        if uid is None or uid == '':
+            return None
+        return self.mC.execute(dd(f"""\
+                                SELECT 
+                                    users.id,
+                                    users.email,
+                                    gyms.name AS gym,
+                                    holds.name AS 'favorite hold',
+                                    users.city,
+                                    users.state,
+                                    CONCAT(users.city,'-', users.state) AS location
+                                FROM 
+                                    users
+                                  
+                                LEFT JOIN 
+                                    gyms 
+                                ON 
+                                    users.gym = gyms.id
+                                  
+                                LEFT JOIN 
+                                    holds 
+                                ON 
+                                    users.favorite_hold = holds.id
+                                WHERE users.id = {uid}  
+                                """))
+
     # Static method which returns the shared managedConnection
     @classmethod
     def getMC(cls):
